@@ -1,2 +1,9 @@
 ---
-# defaults file for ansible.linode_dyndns
+
+linode_dyndns_domain: example.com
+linode_dyndns_hostname: desktop
+linode_dyndns_token: 364e231cdd9cfbb84dee272a3dc4a88ba2d26aeaac77a07c9aefc1972e0dc52b
+
+linode_dyndns_vpn_gateway: 172.20.0.0
+
+linode_dyndns_default_method: ipv.me

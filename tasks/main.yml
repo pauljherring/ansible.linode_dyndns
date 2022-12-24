@@ -1,2 +1,46 @@
 ---
 # tasks file for ansible.linode_dyndns
+- name: "Install php script"
+  become: true
+  ansible.builtin.copy:
+    src: "./files/linode_dyndns.php"
+    dest: "/usr/local/bin/{{BIN_NAME}}.php"
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: "Create a XDG directory if it does not exist: {{INI_PATH}}"
+  ansible.builtin.file:
+    path: "{{INI_PATH}}"
+    state: directory
+    mode: '0755'
+
+- name: "Install INI file: {{INI_FILE}}"
+  ansible.builtin.template:
+    src: "./files/linode_dyndns.ini.j2"
+    dest: "{{INI_FILE}}"
+    mode: '0600'
+
+- name: "Crontab - default"
+  ansible.builtin.cron:
+    name: "linode_dyndns - default"
+    minute: "*/30"
+    job: "sleep $(shuf -i 1-120 -n1); /usr/local/bin/{{BIN_NAME}}.php 2>&1 >/dev/null"
+
+- name: "Crontab - LAN"
+  ansible.builtin.cron:
+    name: "linode_dyndns - LAN"
+    minute: "*/30"
+    job: "sleep $(shuf -i 1-120 -n1); /usr/local/bin/{{BIN_NAME}}.php lan 2>&1 >/dev/null"
+
+- name: "Crontab - VPN"
+  ansible.builtin.cron:
+    name: "linode_dyndns - VPN"
+    minute: "*/30"
+    job: "sleep $(shuf -i 1-120 -n1); /usr/local/bin/{{BIN_NAME}}.php vpn 2>&1 >/dev/null"
+
+- name: "Crontab - Public"
+  ansible.builtin.cron:
+    name: "linode_dyndns - Public"
+    minute: "*/30"
+    job: "sleep $(shuf -i 1-120 -n1); /usr/local/bin/{{BIN_NAME}}.php pub 2>&1 >/dev/null"

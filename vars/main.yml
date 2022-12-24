@@ -1,2 +1,12 @@
 ---
 # vars file for ansible.linode_dyndns
+
+# Used for both the script destination name, but also the ini filename
+BIN_NAME: "linode_dyndns"
+
+# Presumes ${HOME} will always be defined, even if ${XDG_DATA_HOME} isn't''
+XDG_DATA_HOME: "{{ lookup('ansible.builtin.env', 'XDG_DATA_HOME', default=ansible_env['HOME']) }}"
+
+# For convenience
+INI_PATH: "{{XDG_DATA_HOME}}/.local/share"
+INI_FILE: "{{XDG_DATA_HOME}}/.local/share/{{BIN_NAME}}.ini"
