@@ -14,24 +14,22 @@ Requirements
 ------------
 
 - An account with Linode
-- That account controlling DNS entries for a website you own
-- PHP installed on the machine this is to be run on.
+- That account should be in control of DNS entries for a (base) FQDN you own
+- PHP installed on the machine to run the script.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
 `defaults/main.yaml`
 
-- `linode_dyndns_domain`: The dns entry that you control (e.g. `example.com`)
-- `linode_dyndns_hostname`: The unique subdomaine name of this host (without any additional prefixes, e.g. `desktop.example.com`)
+- `linode_dyndns_domain`: The dns entry (FQDN) that you control (e.g. `example.com`)
+- `linode_dyndns_hostname`: The unique subdomain name of this host (without any additional prefixes and without the domain, e.g. `desktop` in `desktop.example.com`)
 - `linode_dyndns_token`: the 64-character API token obtained from Linode with access to modify DNS settings. Should normally be in a `*.enc` file.
-- `linode_dyndns_vpn_gateway`: If using `vpn` as a discovery method for the IP address of a VPN IP, the ip address of the remote gateway. Defaults to `172.20.0.0`.
+- `linode_dyndns_vpn_gateway`: If using `vpn` as a discovery method for the IP address of a VPN IP, the ip address of the remote gateway (or another host on that VPN). Defaults to `172.20.0.0`.
 - `linode_dyndns_default_method`: Which discovery method to apply to the default full hostname of `linode_dyndns_hostname.linode_dyndns_domain`. Defaults to `ipv.me`. Options available:
   - `ipv.me` - use an external service to determine the 'public IP' of the host
   - `vpn` - identify the IP of the internal interface connecting to a VPN (see `linode_dyndns_vpn_gateway`)
   - `local` - the internal IP of the interface that reaches out to the internet
-
 
 Linode setup
 ------------
@@ -61,21 +59,78 @@ When you receive the email for setting the password
   - Lable: `whatever`
   - Expiry: Never (probably? - you can delete them later if necessary)
   - Only thing that needs to be Read/Write is Domains, the rest can (probably should) be 'None'
-  - Copy, and don't lose the `Personal Access Token` displayed - this is what's needed for dyndns.
+  - Copy, and don't lose the `Personal Access Token` displayed - this is what's needed for dyndns - `linode_dyndns_token` above.
 
 Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+None
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Link `host_vars` for all subdomains to common host file
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```bash
+$ ls -l host_vars/*hpnotebook*
+-rw-rw-r-- 1 pherring pherring 54 Dec  8 11:20 host_vars/hpnotebook.example.co.uk.yaml
+lrwxrwxrwx 1 pherring pherring 29 Dec  7 16:15 host_vars/lan.hpnotebook.example.co.uk.yaml -> hpnotebook.example.co.uk.yaml
+lrwxrwxrwx 1 pherring pherring 29 Dec 24 18:32 host_vars/pub.hpnotebook.example.co.uk.yaml -> hpnotebook.example.co.uk.yaml
+lrwxrwxrwx 1 pherring pherring 29 Dec  7 16:15 host_vars/vpn.hpnotebook.example.co.uk.yaml -> hpnotebook.example.co.uk.yaml
+```
+
+And set that one...
+
+```bash
+$ cat host_vars/hpnotebook.example.co.uk.yaml
+hostname: hpnotebook
+linode_dyndns_default_method: lan
+```
+
+`inventory.yaml`
+---
+
+```yaml
+all:
+  hosts:
+  children:
+    test:
+      hosts:
+        vpn.hpnotebook.example.co.uk:
+```
+
+`all.yaml`
+---
+
+```yaml
+- name: Config for all my computers
+  hosts: test
+  gather_facts: yes
+  vars:
+    linode_dyndns_domain: example.co.uk
+    linode_dyndns_hostname: "{{hostname}}"
+
+  tasks:
+    - name: Configure linode-dyndns
+      import_role:
+        name: ansible.linode_dyndns
+
+```
+
+`secrets.enc`
+---
+
+```yaml
+#linode_dyndns
+linode_dyndns_token: bc7db5d741ff5cbb1339aa66e51148c33d2ac408d1daa17bdc26424600a0ac3f
+```
+
+Command line
+---
+
+```bash
+ansible-playbook -K all.yaml -i inventory.yaml -e @secrets_file.enc --ask-vault-pass --diff
+```
 
 License
 -------

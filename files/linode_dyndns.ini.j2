@@ -1,0 +1,24 @@
+[default]
+token = "{{linode_dyndns_token}}"
+host = "{{linode_dyndns_hostname}}"
+domain = "{{linode_dyndns_domain}}"
+method = "{{linode_dyndns_default_method}}"
+
+[lan]
+token = "{{linode_dyndns_token}}"
+host = "lan.{{linode_dyndns_hostname}}"
+domain = "{{linode_dyndns_domain}}"
+method = "local"
+
+[vpn]
+token = "{{linode_dyndns_token}}"
+host = "vpn.{{linode_dyndns_hostname}}"
+domain = "{{linode_dyndns_domain}}"
+method = "vpn"
+gateway = "{{linode_dyndns_vpn_gateway}}"
+
+[pub]
+token = "{{linode_dyndns_token}}"
+host = "pub.{{linode_dyndns_hostname}}"
+domain = "{{linode_dyndns_domain}}"
+method = "ipv.me"
