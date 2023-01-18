@@ -1,5 +1,11 @@
 ---
 # tasks file for ansible.linode_dyndns
+- name: "Install php"
+  package:
+    name: "php"
+    state: latest
+  become: true
+
 - name: "Install php script"
   become: true
   ansible.builtin.copy:
